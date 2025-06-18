@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class CartResponse {
+public class CartResponseDTO {
     private final Map<Long, Integer> cartItems; 
     private final double totalPrice;
 }

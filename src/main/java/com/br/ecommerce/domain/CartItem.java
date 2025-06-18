@@ -31,5 +31,6 @@ public class CartItem {
     private Order order;
     
     private int quantity;
+    
     private double unitPrice;   
 }

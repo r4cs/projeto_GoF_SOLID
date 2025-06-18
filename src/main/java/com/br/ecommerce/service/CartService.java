@@ -15,28 +15,32 @@ public class CartService {
     private final CustomerRepository customerRepository;
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
+    private final ProductFacade productFacade;
+
     private PaymentMethod paymentMethod;
     
     public CartService(OrderService orderService,
                              CustomerRepository customerRepository,
                              ProductRepository productRepository,
-                             CartRepository cartRepository) {
+                             CartRepository cartRepository,
+                             ProductFacade productFacade) {
         this.orderService = orderService;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
         this.cartRepository = cartRepository;
+        this.productFacade = productFacade;
     }
     
     public void setPaymentMethod(PaymentMethod method) {
         this.paymentMethod = method;
     }
-    
+
     public void addItem(Long customerId, Long productId, int quantity) {
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
         
-        // Product product = productRepository.findById(productId)
-        //     .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+        productFacade.getProductById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
         
         Cart cart = customer.getCart();
         if (cart == null) {
@@ -48,6 +52,7 @@ public class CartService {
         cart.getItems().merge(productId, quantity, Integer::sum);
         cartRepository.save(cart);
     }
+
     
     public void removeItem(Long customerId, Long productId) {
         Customer customer = customerRepository.findById(customerId)

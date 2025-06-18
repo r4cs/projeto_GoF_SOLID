@@ -38,13 +38,11 @@ public class OrderService {
         
         // Padrão Facade para obter produtos
         request.getItems().forEach(item -> {
+            Product product = productFacade.getProductById(item.getProductId())
             // Product product = productFacade.getProductById(item.getProduct().getId())
-            Product product = productFacade.getProductById(item.getProduct().getId())
-                .orElseThrow(() -> new OrderException("Produto não encontrado: " + item.getProduct().getId()));
+                .orElseThrow(() -> new OrderException("Produto não encontrado: " + item.getProductId()));
             
             CartItem cartItem = new CartItem();
-            // cartItem.setProduct(product);
-            // cartItem.setProductId(product.getId());
             cartItem.getProduct().getId();
             cartItem.setQuantity(item.getQuantity());
             cartItem.setUnitPrice(product.getPrice());
@@ -69,7 +67,7 @@ public class OrderService {
         .map(entry -> {
             Product product = productFacade.getProductById(entry.getKey())
                 .orElseThrow(() -> new OrderException("Produto não encontrado: " + entry.getKey()));
-            return new CartItemDTO(product, entry.getValue());
+            return new CartItemDTO(product.getId(), entry.getValue(), entry.getKey());
         })
         .collect(Collectors.toList());
     

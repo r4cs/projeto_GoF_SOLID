@@ -45,7 +45,6 @@ public class ProductFacade {
     }
     
     public Optional<Product> getProductById(Long id) {
-        // Tenta buscar da API externa primeiro
         Optional<Product> externalProduct = fakeStoreService.fetchProductById(id);
         
         if(externalProduct.isPresent()) {
