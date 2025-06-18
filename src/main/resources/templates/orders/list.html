@@ -1,0 +1,55 @@
+<!-- src/main/resources/templates/orders/list.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Meus Pedidos</title>
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Meus Pedidos</h2>
+        
+        <div th:if="${orders.empty}" class="alert alert-info">
+            Você ainda não fez nenhum pedido. <a th:href="@{/products}">Comece a comprar</a>
+        </div>
+        
+        <div th:unless="${orders.empty}" class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Nº Pedido</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="order : ${orders}">
+                                <td th:text="${order.id}"></td>
+                                <td th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${order.status == 'DELIVERED'} ? 'bg-success' :
+                                                         ${order.status == 'CANCELLED'} ? 'bg-danger' :
+                                                         'bg-primary'"
+                                          th:text="${order.status}"></span>
+                                </td>
+                                <td th:text="${'R$ ' + #numbers.formatDecimal(order.getTotalPrice(), 1, 2, 'POINT')}"></td>
+                                <td>
+                                    <a th:href="@{/orders/} + ${order.id}" class="btn btn-sm btn-outline-primary">
+                                        Detalhes
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

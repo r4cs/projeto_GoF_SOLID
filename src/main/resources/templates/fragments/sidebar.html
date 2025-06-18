@@ -1,0 +1,35 @@
+<div th:fragment="sidebar">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link"
+                    th:href="@{/customer}"
+                    th:classappend="${activeFragment == 'customer'} ? 'active' : ''">
+                    <span data-feather="user"></span>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                    th:href="@{/products}"
+                    th:classappend="${activeFragment == 'products'} ? 'active' : ''">
+                    <span data-feather="shopping-cart"></span>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="nav-item">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/cart}">
+                    <span data-feather="shopping-bag"></span>
+                    <span>Cart</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/orders}">
+                    <span data-feather="list"></span>
+                    <span>Orders</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
