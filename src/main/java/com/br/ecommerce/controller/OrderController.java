@@ -17,7 +17,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Controller
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
 public class OrderController {
     
     private final OrderService orderService;
@@ -36,7 +36,8 @@ public class OrderController {
     public String listOrders(Model model, @AuthenticationPrincipal Customer customer) {
         List<Order> orders = orderService.getOrdersByCustomer(customer.getId());
         model.addAttribute("orders", orders);
-        return "orders/list";
+        return "home/homeSignedIn";
+        // return "orders/list";
     }
     
     @GetMapping("/{id}")
@@ -50,6 +51,7 @@ public class OrderController {
         }
         
         model.addAttribute("order", order);
+        model.addAttribute("activeFragment", "orders");
         return "orders/detail";
     }
     

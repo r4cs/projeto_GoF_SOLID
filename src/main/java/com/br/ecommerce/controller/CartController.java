@@ -27,22 +27,15 @@ public class CartController {
         model.addAttribute("cartItems", cartService.getCartItems(customer.getId()));
         model.addAttribute("total", cartService.getTotal(customer.getId()));
         model.addAttribute("activeFragment", "cart");
-        return "fragments/cart";
+        return "home/homeSignedIn";
     }
 
     @PostMapping("/add/{productId}")
-    @ResponseBody // Adicionar esta anotação para APIs REST
+    @ResponseBody
     public ResponseEntity<?> addToCart(
         @PathVariable Long productId,
         @RequestBody CartItemDTO cartItem,
         @AuthenticationPrincipal Customer customer) {
-
-        System.out.println("\n" + "product id: " + productId + "\n");
-        System.out.println("\n" + "cartItem: " + cartItem + "\n");
-        System.out.println("\n" + "cartItem quantity: " + cartItem.getQuantity() + "\n");
-        System.out.println("\n" + "cartItem get product id: " + cartItem.getProductId() + "\n");
-        System.out.println("\n" + "cartItem price: " + cartItem.getUnitPrice() + "\n");
-        // System.out.println("\n" + "" + "\n");
         
         try {
             cartService.addItem(customer.getId(), productId, cartItem.getQuantity());
@@ -52,7 +45,8 @@ public class CartController {
         }
     }
 
-    @PostMapping("/checkout")
+    // @PostMapping("/checkout")
+    @GetMapping("/checkout")
     public String checkout(@AuthenticationPrincipal Customer customer) {
         Long orderId = cartService.checkout(customer.getId());
         return "redirect:/orders/" + orderId;

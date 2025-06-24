@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemDTO {
-    // private Product product;
+
     @NotNull
     private Long productId;
 
@@ -28,8 +28,4 @@ public class CartItemDTO {
     public double getSubtotal() {
         return quantity * unitPrice;
     }
-    
-    // public double getSubtotal() {
-    //     return product.getPrice() * quantity;
-    // }
 }

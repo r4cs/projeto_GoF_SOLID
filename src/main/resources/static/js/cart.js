@@ -1,3 +1,32 @@
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.input-group button').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            let value = parseInt(input.value);
+            
+            if (this.textContent === '+' && value < 99) {
+                input.value = value + 1;
+            } else if (this.textContent === '-' && value > 1) {
+                input.value = value - 1;
+            }
+            
+            // Aqui: adicionar uma chamada AJAX para atualizar a quantidade no servidor
+        });
+    });
+    
+    // Validação de quantidade
+    document.querySelectorAll('.input-group input').forEach(input => {
+        input.addEventListener('change', function() {
+            let value = parseInt(this.value);
+            if (isNaN(value) || value < 1) {
+                this.value = 1;
+            } else if (value > 99) {
+                this.value = 99;
+            }
+        });
+    });
+});
+
 function addToCart(buttonElement) {
     const productId = buttonElement.getAttribute('data-product-id');
     const price = buttonElement.getAttribute('data-product-price');
@@ -9,7 +38,6 @@ function addToCart(buttonElement) {
     console.log("Adding to cart - Product ID:", productId, "Quantity:", parsedQuantity, "Price:", parsedPrice);
 
     if (isNaN(parsedQuantity)) {
-        showToast('Quantidade inválida', 'error');
         return;
     }
 
@@ -46,15 +74,13 @@ function addToCart(buttonElement) {
                 throw new Error(err.message || 'Erro ao adicionar ao carrinho') 
             });
         }
-        return response.json();
+        return response;
     })
     .then(data => {
         console.log("Success:", data);
-        showToast('Item adicionado ao carrinho!', 'success');
-        updateCartCounter(data.totalItems);
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast(error.message, 'error');
     });
 }
+

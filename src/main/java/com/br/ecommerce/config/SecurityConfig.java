@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
                             .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
-                            .requestMatchers("/products", "/customer", "/fragments/**", "/cart/api/**").authenticated()
+                            .requestMatchers("/products", "/customer", "/fragments/**", "/cart/**", "/orders/**").authenticated()
                             .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2Login ->

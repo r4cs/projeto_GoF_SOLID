@@ -36,10 +36,8 @@ public class OrderService {
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(OrderStatus.NEW);
         
-        // Padrão Facade para obter produtos
         request.getItems().forEach(item -> {
             Product product = productFacade.getProductById(item.getProductId())
-            // Product product = productFacade.getProductById(item.getProduct().getId())
                 .orElseThrow(() -> new OrderException("Produto não encontrado: " + item.getProductId()));
             
             CartItem cartItem = new CartItem();

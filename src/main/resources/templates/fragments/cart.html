@@ -1,36 +1,83 @@
-    <div id="cart-fragment" th:fragment="cart"></div>
-
-    <div class="container mt-4">
-        <h2 class="mb-4">Meu Carrinho</h2>
-        
-        <div th:if="${cartItems.empty}" class="alert alert-info">
-            Seu carrinho está vazio. <a th:href="@{/products}">Continue comprando</a>
+<div id="cart-fragment" th:fragment="cart">
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="fas fa-shopping-cart me-2"></i>Meu Carrinho
+            </h2>
+            <a th:href="@{/products}" class="btn btn-outline-primary">
+                <i class="fas fa-plus me-1"></i> Adicionar Mais Itens
+            </a>
         </div>
         
-        <div th:unless="${cartItems.empty}" class="card shadow-sm">
-            <div class="card-body">
+        <div th:if="${cartItems.empty}" class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Seu carrinho está vazio</h4>
+                <p class="text-muted mb-4">Adicione produtos para começar a comprar</p>
+                <a th:href="@{/products}" class="btn btn-primary">
+                    <i class="fas fa-store me-1"></i> Ver Produtos
+                </a>
+            </div>
+        </div>
+        
+        <div th:unless="${cartItems.empty}" class="card border-0 shadow-sm">
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table table-hover mb-0">
                         <thead class="thead-light">
                             <tr>
-                                <th>Produto</th>
-                                <th>Preço Unitário</th>
-                                <th>Quantidade</th>
-                                <th>Subtotal</th>
-                                <th>Ações</th>
+                                <th style="width: 40%">Produto</th>
+                                <th class="text-end">Preço Unitário</th>
+                                <th class="text-center">Quantidade</th>
+                                <th class="text-end">Subtotal</th>
+                                <th class="text-center">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="item : ${cartItems}">
-                                <td th:text="${item.product.name}"></td>
-                                <td th:text="${'R$ ' + #numbers.formatDecimal(item.product.price, 1, 2, 'POINT')}"></td>
+                            <tr th:each="item : ${cartItems.entrySet()}" th:with="product=${@productFacade.getProductById(item.key).orElse(null)}">
                                 <td>
-                                    <input type="number" th:value="${item.quantity}" min="1" class="form-control" style="width: 70px;">
+                                    <div class="d-flex align-items-center">
+                                        <img th:if="${product != null and product.image != null}" 
+                                             th:src="${product.image}" 
+                                             alt="Imagem do produto" 
+                                             class="img-thumbnail me-3" 
+                                             style="width: 60px; height: 60px; object-fit: contain;">
+                                        <div>
+                                            <h6 class="mb-1" th:text="${product != null ? product.title : 'Produto não encontrado'}" 
+                                                th:class="${product == null} ? 'text-danger'"></h6>
+                                            <small class="text-muted" th:text="${product != null ? product.category : ''}"></small>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td th:text="${'R$ ' + #numbers.formatDecimal(item.product.price * item.quantity, 1, 2, 'POINT')}"></td>
-                                <td>
-                                    <a th:href="@{/cart/remove/} + ${item.product.id}" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash"></i>
+                                
+                                <td class="text-end" th:class="${product == null} ? 'text-danger'">
+                                    <span th:if="${product != null}" 
+                                          th:text="${'R$ ' + #numbers.formatDecimal(product.price, 1, 2, 'POINT')}">
+                                    </span>
+                                    <span th:unless="${product != null}">-</span>
+                                </td>
+                                
+                                <td class="text-center">
+                                    <div class="input-group input-group-sm" style="width: 120px; margin: 0 auto;">
+                                        <button class="btn btn-outline-secondary" type="button">-</button>
+                                        <input type="number" th:value="${item.value}" min="1" 
+                                               class="form-control text-center" style="width: 50px;">
+                                        <button class="btn btn-outline-secondary" type="button">+</button>
+                                    </div>
+                                </td>
+                                
+                                <td class="text-end" th:class="${product == null} ? 'text-danger'">
+                                    <span th:if="${product != null}" 
+                                          th:text="${'R$ ' + #numbers.formatDecimal(product.price * item.value, 1, 2, 'POINT')}">
+                                    </span>
+                                    <span th:unless="${product != null}">-</span>
+                                </td>
+                                
+                                <td class="text-center">
+                                    <a th:href="@{/cart/remove/} + ${item.key}" 
+                                       class="btn btn-sm btn-outline-danger"
+                                       title="Remover item">
+                                        <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -38,20 +85,42 @@
                     </table>
                 </div>
                 
-                <div class="d-flex justify-content-end mt-4">
-                    <div class="bg-light p-3 rounded">
-                        <h5>Total: <span th:text="${'R$ ' + #numbers.formatDecimal(total, 1, 2, 'POINT')}"></span></h5>
+                <div class="p-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Código promocional">
+                                <button class="btn btn-secondary" type="button">Aplicar</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal:</span>
+                                <span th:text="${'R$ ' + #numbers.formatDecimal(total, 1, 2, 'POINT')}"></span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Frete:</span>
+                                <span>Grátis</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold fs-5">
+                                <span>Total:</span>
+                                <span th:text="${'R$ ' + #numbers.formatDecimal(total, 1, 2, 'POINT')}"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="d-flex justify-content-between mt-4">
-                    <a th:href="@{/products}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left me-2"></i> Continuar Comprando
-                    </a>
-                    <a th:href="@{/cart/checkout}" class="btn btn-primary">
-                        Finalizar Compra <i class="fas fa-arrow-right ms-2"></i>
-                    </a>
+                <div class="p-4 border-top bg-light">
+                    <div class="d-flex justify-content-between">
+                        <a th:href="@{/products}" class="btn btn-outline-secondary">
+                            <i class="fas fa-chevron-left me-1"></i> Continuar Comprando
+                        </a>
+                        <a th:href="@{/cart/checkout}" class="btn btn-primary px-4">
+                            Finalizar Compra <i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
