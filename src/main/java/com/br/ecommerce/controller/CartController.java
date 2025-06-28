@@ -2,10 +2,17 @@
 package com.br.ecommerce.controller;
 
 import com.br.ecommerce.domain.Customer;
-import com.br.ecommerce.dto.CartItemDTO;
+import com.br.ecommerce.domain.payment.BoletoPayment;
+import com.br.ecommerce.domain.payment.CreditCardPayment;
+import com.br.ecommerce.domain.payment.PaymentMethod;
+import com.br.ecommerce.domain.payment.PixPayment;
+import com.br.ecommerce.dto.OrderItemDTO;
 import com.br.ecommerce.service.CartService;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -24,7 +31,7 @@ public class CartController {
     
     @GetMapping
     public String viewCart(Model model, @AuthenticationPrincipal Customer customer) {
-        model.addAttribute("cartItems", cartService.getCartItems(customer.getId()));
+        model.addAttribute("orderItems", cartService.getOrderItems(customer.getId()));
         model.addAttribute("total", cartService.getTotal(customer.getId()));
         model.addAttribute("activeFragment", "cart");
         return "home/homeSignedIn";
@@ -34,23 +41,44 @@ public class CartController {
     @ResponseBody
     public ResponseEntity<?> addToCart(
         @PathVariable Long productId,
-        @RequestBody CartItemDTO cartItem,
+        @RequestBody OrderItemDTO orderItem,
         @AuthenticationPrincipal Customer customer) {
         
         try {
-            cartService.addItem(customer.getId(), productId, cartItem.getQuantity());
+            cartService.addItem(customer.getId(), productId, orderItem.getQuantity());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // @PostMapping("/checkout")
-    @GetMapping("/checkout")
-    public String checkout(@AuthenticationPrincipal Customer customer) {
-        Long orderId = cartService.checkout(customer.getId());
-        return "redirect:/orders/" + orderId;
+    @PostMapping(value = "/checkout", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<?> checkout(
+        @AuthenticationPrincipal Customer customer,
+        @RequestBody Map<String, String> request) {
+        
+        try {
+            // método de pagamento básico
+            PaymentMethod paymentMethod;
+            switch(request.get("paymentMethod")) {
+                case "PIX": paymentMethod = new PixPayment(); break;
+                case "BOLETO": paymentMethod = new BoletoPayment(); break;
+                default: paymentMethod = new CreditCardPayment();
+            }
+            
+            cartService.setPaymentMethod(paymentMethod);
+            Long orderId = cartService.checkout(customer.getId());
+
+            System.out.println("\nOrder id em cart controller: " + orderId);
+            
+            return ResponseEntity.ok(Map.of("orderId", orderId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        }
     }
+
 
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<String> handleNullPointer(NullPointerException ex) {

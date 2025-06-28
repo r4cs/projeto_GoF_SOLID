@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartItemDTO {
+public class OrderItemDTO {
 
     @NotNull
     private Long productId;

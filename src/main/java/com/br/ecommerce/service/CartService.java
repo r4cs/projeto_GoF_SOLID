@@ -2,10 +2,10 @@ package com.br.ecommerce.service;
 
 import com.br.ecommerce.domain.*;
 import com.br.ecommerce.domain.payment.PaymentMethod;
-import com.br.ecommerce.domain.product.Product; 
 import com.br.ecommerce.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.Map;
 
 @Service
@@ -61,7 +61,7 @@ public class CartService {
         }
     }
     
-    public Map<Long, Integer> getCartItems(Long customerId) {
+    public Map<Long, Integer> getOrderItems(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
         
@@ -70,11 +70,10 @@ public class CartService {
     }
     
     public double getTotal(Long customerId) {
-        Map<Long, Integer> items = getCartItems(customerId);
+        Map<Long, Integer> items = getOrderItems(customerId);
         double total = 0.0;
         
         for (Map.Entry<Long, Integer> entry : items.entrySet()) {
-            // Product product = productRepository.findById(entry.getKey())
             Product product = productFacade.getProductById(entry.getKey())
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
             total += product.getPrice() * entry.getValue();
@@ -87,17 +86,32 @@ public class CartService {
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
         
-        Order order = orderService.createOrderFromCart(customer);
+        if (paymentMethod == null) {
+            throw new IllegalStateException("Método de pagamento não selecionado");
+        }
         
+        Order order = orderService.createOrderFromCart(customer);
+        System.out.println("Order: " + order.toString());
+        System.out.println("Order id em cart service: " + order.getId());
+        System.out.println("Order valor total: " + order.getTotalPrice());
+
+        System.out.println("\nCart Service:");
+        for (OrderItem orderItem : order.getItems()) {
+            System.out.println("orderItem id: " + orderItem.getId());
+            System.out.println("orderItem unit price: " + orderItem.getUnitPrice());
+            System.out.println("orderItem quantity: " + orderItem.getQuantity());
+        }
+
         // Processar pagamento
         paymentMethod.pay(getTotal(customerId));
         
+        //retirado por enquanto
         // Limpar carrinho
-        Cart cart = customer.getCart();
-        if (cart != null) {
-            cart.getItems().clear();
-            cartRepository.save(cart);
-        }
+        // Cart cart = customer.getCart();
+        // if (cart != null) {
+        //     cart.getItems().clear();
+        //     cartRepository.save(cart);
+        // }
         
         return order.getId();
     }

@@ -12,6 +12,6 @@ import java.util.List;
 @Setter
 public class OrderRequestDTO {
     private Customer customer;
-    private List<CartItemDTO> items;
+    private List<OrderItemDTO> items;
 
 }

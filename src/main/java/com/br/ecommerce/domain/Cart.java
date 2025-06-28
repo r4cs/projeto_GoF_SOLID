@@ -25,4 +25,5 @@ public class Cart {
     @MapKeyColumn(name = "productId")
     @Column(name = "quantity")
     private Map<Long, Integer> items = new HashMap<>();
+
 }

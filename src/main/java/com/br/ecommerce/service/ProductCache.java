@@ -1,7 +1,8 @@
 package com.br.ecommerce.service;
 
-import com.br.ecommerce.domain.product.Product;
 import org.springframework.stereotype.Component;
+
+import com.br.ecommerce.domain.Product;
 
 import java.util.*;
 

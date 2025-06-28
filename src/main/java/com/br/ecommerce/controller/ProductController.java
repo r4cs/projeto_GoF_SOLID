@@ -1,7 +1,7 @@
 package com.br.ecommerce.controller;
 
 import com.br.ecommerce.domain.Customer;
-import com.br.ecommerce.domain.product.Product;
+import com.br.ecommerce.domain.Product;
 import com.br.ecommerce.service.ProductFacade;
 import com.br.ecommerce.service.CartService;
 

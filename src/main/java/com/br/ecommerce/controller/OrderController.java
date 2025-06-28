@@ -3,11 +3,11 @@ package com.br.ecommerce.controller;
 
 import com.br.ecommerce.domain.Customer;
 import com.br.ecommerce.domain.Order;
+import com.br.ecommerce.domain.order.OrderUtils;
 import com.br.ecommerce.dto.OrderRequestDTO;
 import com.br.ecommerce.service.OrderService;
 
 import org.springframework.ui.Model;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -35,9 +35,12 @@ public class OrderController {
     @GetMapping
     public String listOrders(Model model, @AuthenticationPrincipal Customer customer) {
         List<Order> orders = orderService.getOrdersByCustomer(customer.getId());
+        System.out.println("\n\nCustomer ID: " + customer.getId()); // Novo log
+        System.out.println("Número de pedidos encontrados: " + orders.size());
+        System.out.println("Orders found: " + orders + "\n\n"); // Mostra os pedidos
         model.addAttribute("orders", orders);
+        model.addAttribute("activeFragment", "orders");
         return "home/homeSignedIn";
-        // return "orders/list";
     }
     
     @GetMapping("/{id}")
@@ -51,8 +54,8 @@ public class OrderController {
         }
         
         model.addAttribute("order", order);
-        model.addAttribute("activeFragment", "orders");
-        return "orders/detail";
+        model.addAttribute("activeFragment", "detail");
+        return "fragments/order-detail";
     }
     
     @GetMapping("/customer/{customerId}")
@@ -65,5 +68,10 @@ public class OrderController {
     public ResponseEntity<Void> advanceOrderStatus(@PathVariable Long id) {
         orderService.advanceOrderStatus(id);
         return ResponseEntity.ok().build();
+    }
+
+    @ModelAttribute("orderUtils")
+    public OrderUtils orderUtils() {
+        return new OrderUtils();
     }
 }

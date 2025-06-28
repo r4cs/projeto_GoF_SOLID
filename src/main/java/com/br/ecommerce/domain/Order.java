@@ -33,9 +33,10 @@ public class Order {
     private Customer customer;
     
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CartItem> items = new ArrayList<>();
+    private List<OrderItem> items = new ArrayList<>();
     
     private LocalDateTime orderDate;
+    
     private OrderStatus status;
     
     @Transient
@@ -75,14 +76,14 @@ public class Order {
         }
     }
 
-    public void addItem(CartItem item) {
-    this.items.add(item);
-    item.setOrder(this); // Mantém a consistência bidirecional
+    public void addItem(OrderItem item) {
+        this.items.add(item);
+        item.setOrder(this);
     }
 
     public Double getTotalPrice() {
     return items.stream()
         .mapToDouble(item -> item.getUnitPrice() * item.getQuantity())
         .sum();
-}
+    }
 }

@@ -1,8 +1,9 @@
 // src/main/java/com/br/ecommerce/service/ProductFacade.java
 package com.br.ecommerce.service;
 
-import com.br.ecommerce.domain.product.Product;
-// import com.br.ecommerce.external.fakestore.FakeStoreProductAdapter;
+import com.br.ecommerce.domain.Product;
+import com.br.ecommerce.dto.FakeStoreProductDTO;
+import com.br.ecommerce.external.fakestore.FakeStoreProductAdapter;
 import com.br.ecommerce.external.fakestore.FakeStoreService;
 import com.br.ecommerce.repository.ProductRepository;
 
@@ -22,14 +23,14 @@ public class ProductFacade {
     
     private final FakeStoreService fakeStoreService;
     private final ProductRepository productRepository;
-    // private final FakeStoreProductAdapter adapter;
+    private final FakeStoreProductAdapter adapter;
     
     public ProductFacade(FakeStoreService fakeStoreService, 
-                        ProductRepository productRepository) { //,
-                        // FakeStoreProductAdapter adapter) {
+                        ProductRepository productRepository,
+                        FakeStoreProductAdapter adapter) {
         this.fakeStoreService = fakeStoreService;
         this.productRepository = productRepository;
-        // this.adapter = adapter;
+        this.adapter = adapter;
     }
     
     public List<Product> getAllProducts() {
@@ -43,21 +44,38 @@ public class ProductFacade {
         
         return externalProducts;
     }
-    
+
     public Optional<Product> getProductById(Long id) {
-        Optional<Product> externalProduct = fakeStoreService.fetchProductById(id);
-        
-        if(externalProduct.isPresent()) {
-            return externalProduct;
-        }
-        
-        // Fallback para o banco de dados local
-        return productRepository.findById(id);
+    Optional<Product> externalProduct = fakeStoreService.fetchProductById(id);
+    
+    if(externalProduct.isPresent()) {
+        // Persiste o produto da API externa
+        return Optional.of(productRepository.save(externalProduct.get()));
+    }
+    
+    return productRepository.findById(id);
     }
 
-    // src/main/java/com/br/ecommerce/service/ProductFacade.java
+    /**
+     * Cria um novo produto, aplicando truncamento à descrição se exceder 255 caracteres.
+     * @param FakeStoreProductDTO O DTO contendo os dados do produto.
+     * @return O produto persistido.
+     */
+    public Product createProduct(FakeStoreProductDTO productDTO) {
+            Product product = adapter.adaptToProduct(productDTO);
+
+        String description = productDTO.getDescription();
+        if (description != null && description.length() > 255) {
+            product.setDescription(description.substring(0, 240).concat("(...)"));
+        } else {
+            product.setDescription(description);
+        }
+
+        return productRepository.save(product);
+    }
+    
     public Map<String, List<Product>> getProductsGroupedByCategory() {
-        List<Product> products = getAllProducts(); // Método existente
+        List<Product> products = getAllProducts();
         return products.stream()
                 .collect(Collectors.groupingBy(Product::getCategory));
     }
@@ -66,7 +84,7 @@ public class ProductFacade {
         return fakeStoreService.fetchAllCategories();
     }
 
-public Page<Product> getProducts(Pageable pageable, String category) {
+    public Page<Product> getProducts(Pageable pageable, String category) {
         List<Product> products;
         
         if (category != null && !category.isEmpty()) {
@@ -97,5 +115,5 @@ public Page<Product> getProducts(Pageable pageable, String category) {
         return new PageImpl<>(products.subList(start, end), pageable, products.size());
     }
     
-    // Outros métodos da fachada...
+    // TODO: Outros métodos da fachada...
 }

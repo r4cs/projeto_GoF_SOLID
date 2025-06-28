@@ -1,31 +1,37 @@
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.input-group button').forEach(button => {
-        button.addEventListener('click', function() {
-            const input = this.parentElement.querySelector('input');
-            let value = parseInt(input.value);
-            
-            if (this.textContent === '+' && value < 99) {
-                input.value = value + 1;
-            } else if (this.textContent === '-' && value > 1) {
-                input.value = value - 1;
+const checkoutBtn = document.getElementById('checkoutBtn');
+
+if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', function() {
+        // Reutilize as mesmas variáveis CSRF que já funcionam no addToCart
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+        
+        fetch('/cart/checkout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify({ paymentMethod: paymentMethod })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json().then(data => {
+                    window.location.href = '/orders/' + data.orderId;
+                });
             }
-            
-            // Aqui: adicionar uma chamada AJAX para atualizar a quantidade no servidor
+            return response.json().then(err => { 
+                throw new Error(err || 'Erro ao finalizar compra:' || err.message);
+            });
+        })
+        .catch(error => {
+            alert(error.message);
+            console.error('Error:', error);
         });
     });
-    
-    // Validação de quantidade
-    document.querySelectorAll('.input-group input').forEach(input => {
-        input.addEventListener('change', function() {
-            let value = parseInt(this.value);
-            if (isNaN(value) || value < 1) {
-                this.value = 1;
-            } else if (value > 99) {
-                this.value = 99;
-            }
-        });
-    });
-});
+}
 
 function addToCart(buttonElement) {
     const productId = buttonElement.getAttribute('data-product-id');

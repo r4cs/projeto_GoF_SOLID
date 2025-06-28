@@ -14,7 +14,7 @@
           rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossorigin="anonymous">
-    <!-- <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon"> -->
+    <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
 
     <style type="text/css">
         .d-none {
@@ -22,7 +22,7 @@
         }
         .my-fixed-height-col {
             height: 250px;
-            overflow-y: auto; /* Ou hidden, ou scroll, dependendo do comportamento desejado para o conteúdo excedente */
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -51,10 +51,9 @@
                     <div th:replace="~{fragments/cart :: cart}"></div>
                 </div>
 
-                <div th:if="${activeFragment == 'order'}">
-                    <div th:replace="~{fragments/order :: order}"></div>
+                <div th:if="${activeFragment == 'orders'}">
+                    <div th:replace="~{fragments/orders :: orders}"></div>
                 </div>
-
 
             </main>
 

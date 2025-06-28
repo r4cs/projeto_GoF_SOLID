@@ -24,6 +24,12 @@ public enum OrderStatus {
         public OrderStatus next() {
             return this; // Não avança mais
         }
+    },
+    CANCELED {
+        @Override
+        public OrderStatus next() {
+            return this;
+        }
     };
 
     public abstract OrderStatus next();

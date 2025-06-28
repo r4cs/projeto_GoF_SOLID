@@ -2,13 +2,12 @@ package com.br.ecommerce.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-// import org.springframework.web.cors.CorsConfiguration;
 
 import com.br.ecommerce.service.AuthService;
 
@@ -24,15 +23,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+            http
                 .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()
-                ))
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                )
                 .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                            .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
-                            .requestMatchers("/products", "/customer", "/fragments/**", "/cart/**", "/orders/**").authenticated()
-                            .anyRequest().authenticated()
+                authorizeRequests
+                        .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/cart/checkout").authenticated() // Adicione esta linha
+                        .requestMatchers("/products", "/customer", "/fragments/**", "/cart/**", "/orders/**").authenticated()
+                        .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2Login ->
                         oauth2Login

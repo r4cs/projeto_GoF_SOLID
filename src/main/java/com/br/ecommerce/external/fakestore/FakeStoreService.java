@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.br.ecommerce.domain.product.Product;
+import com.br.ecommerce.domain.Product;
 import com.br.ecommerce.dto.FakeStoreProductDTO;
 
 import java.util.List;
@@ -38,7 +38,7 @@ public class FakeStoreService {
         );
         
         return response.getBody().stream()
-            .map(adapter::adapt)
+            .map(adapter::adaptToProduct)
             .toList();
     }
 
@@ -62,7 +62,7 @@ public class FakeStoreService {
         );
         
         List<Product> allProducts = response.getBody().stream()
-            .map(adapter::adapt)
+            .map(adapter::adaptToProduct)
             .toList();
 
         // Como a FakeStoreAPI não tem 'offset' nativo, aplicamos a lógica de offset em memória
@@ -78,7 +78,7 @@ public class FakeStoreService {
                 apiUrl + "/products/" + id,
                 FakeStoreProductDTO.class
             );
-            return Optional.ofNullable(adapter.adapt(dto));
+            return Optional.ofNullable(adapter.adaptToProduct(dto));
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -106,7 +106,7 @@ public class FakeStoreService {
         );
 
         return response.getBody().stream()
-            .map(adapter::adapt)
+            .map(adapter::adaptToProduct)
             .toList();
     }
 }

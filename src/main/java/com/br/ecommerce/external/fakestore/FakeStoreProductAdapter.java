@@ -3,30 +3,30 @@ package com.br.ecommerce.external.fakestore;
 
 import org.springframework.stereotype.Component;
 
-import com.br.ecommerce.domain.product.ClothingProduct;
-import com.br.ecommerce.domain.product.JewleryProduct;
-import com.br.ecommerce.domain.product.Product;
+import com.br.ecommerce.domain.Product;
 import com.br.ecommerce.dto.FakeStoreProductDTO;
 
 @Component
 public class FakeStoreProductAdapter {
     
-    public Product adapt(FakeStoreProductDTO dto) {
-        Product product;
-        
-        if (dto.getCategory().contains("clothing")) {
-            product = new ClothingProduct();
-        } else {
-            product = new JewleryProduct();
-        }
+    public Product adaptToProduct(FakeStoreProductDTO dto) {
+        Product product = new Product();
         
         product.setId(dto.getId());
         product.setTitle(dto.getTitle());
         product.setPrice(dto.getPrice());
         product.setCategory(dto.getCategory());
-        product.setDescription(dto.getDescription());
+
+        if (dto.getDescription() != null && dto.getDescription().length() > 255) {
+            product.setDescription(dto.getDescription().substring(0, 240).concat("(...)"));
+        } else {
+            product.setDescription(dto.getDescription());
+        }
+
         product.setImage(dto.getImage());
+
         
+            
         return product;
     }
     

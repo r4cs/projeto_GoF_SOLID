@@ -1,10 +1,12 @@
 package com.br.ecommerce.service;
 
 import com.br.ecommerce.domain.*;
-import com.br.ecommerce.domain.product.Product;
-import com.br.ecommerce.dto.CartItemDTO;
+import com.br.ecommerce.dto.FakeStoreProductDTO;
+import com.br.ecommerce.dto.OrderItemDTO;
 import com.br.ecommerce.dto.OrderRequestDTO;
+import com.br.ecommerce.external.fakestore.FakeStoreProductAdapter;
 import com.br.ecommerce.repository.OrderRepository;
+import com.br.ecommerce.repository.ProductRepository;
 import com.br.ecommerce.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,13 +23,19 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductFacade productFacade;
     private final NotificationService notificationService;
+    private final ProductRepository productRepository;
+    private final FakeStoreProductAdapter adapter;
     
     public OrderService(OrderRepository orderRepository,
                       ProductFacade productFacade,
-                      NotificationService notificationService) {
+                      NotificationService notificationService,
+                      ProductRepository productRepository,
+                      FakeStoreProductAdapter adapter) {
         this.orderRepository = orderRepository;
         this.productFacade = productFacade;
         this.notificationService = notificationService;
+        this.productRepository = productRepository;
+        this.adapter = adapter;
     }
     
     public Order createOrder(OrderRequestDTO request) {
@@ -39,19 +47,32 @@ public class OrderService {
         request.getItems().forEach(item -> {
             Product product = productFacade.getProductById(item.getProductId())
                 .orElseThrow(() -> new OrderException("Produto não encontrado: " + item.getProductId()));
+
+            FakeStoreProductDTO productDTO = adapter.adaptToDto(product);
+
+            if (product.getId() != null && productRepository.existsById(product.getId())) {
+                // product = productRepository.save(product);
+                product = productFacade.createProduct(productDTO);
+            }
             
-            CartItem cartItem = new CartItem();
-            cartItem.getProduct().getId();
-            cartItem.setQuantity(item.getQuantity());
-            cartItem.setUnitPrice(product.getPrice());
+            OrderItem orderItem = new OrderItem();
+            orderItem.setProduct(product);
+            orderItem.setQuantity(item.getQuantity());
+            orderItem.setUnitPrice(product.getPrice());
+            orderItem.setOrder(order);
             
-            order.addItem(cartItem);  // Agora usando o método correto
+            order.addItem(orderItem);
         });
-        
-        Order savedOrder = orderRepository.save(order);
-        
+
+        // !!!
+        Order savedOrder = orderRepository.save(order); 
+
+        System.out.println("\nSavedOrder em order Service: " + savedOrder.toString());
+        System.out.println("SavedOrder get id em order Service: " + savedOrder.getId());
+        System.out.println("SavedOrder get total priceem order Service: " + savedOrder.getTotalPrice());
+
         // Padrão Observer via NotificationService (Decorator)
-        notificationService.send("Pedido criado: #" + savedOrder.getId());
+        notificationService.send("\nPedido criado: #" + savedOrder.getId());
         
         return savedOrder;
     }
@@ -60,16 +81,18 @@ public class OrderService {
     OrderRequestDTO request = new OrderRequestDTO();
     request.setCustomer(customer);
     
-    // Obter os itens do carrinho já como CartItemDTO com produtos completos
-    List<CartItemDTO> items = customer.getCart().getItems().entrySet().stream()
+    // Obter os itens do carrinho já como OrderItemDTO com produtos completos
+    List<OrderItemDTO> items = customer.getCart().getItems().entrySet().stream()
         .map(entry -> {
             Product product = productFacade.getProductById(entry.getKey())
                 .orElseThrow(() -> new OrderException("Produto não encontrado: " + entry.getKey()));
-            return new CartItemDTO(product.getId(), entry.getValue(), entry.getKey());
+            return new OrderItemDTO(product.getId(), entry.getValue(), entry.getKey());
         })
         .collect(Collectors.toList());
     
     request.setItems(items);
+    System.out.println("\nrequest items em order service: " + request.getItems());
+    System.out.println("request customer id em order service: " + request.getCustomer().getId());
     return createOrder(request);
 }
     
