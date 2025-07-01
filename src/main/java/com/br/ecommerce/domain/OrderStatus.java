@@ -22,7 +22,7 @@ public enum OrderStatus {
     DELIVERED {
         @Override
         public OrderStatus next() {
-            return this; // Não avança mais
+            return this;
         }
     },
     CANCELED {

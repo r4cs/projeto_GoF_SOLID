@@ -51,7 +51,6 @@ public class OrderService {
             FakeStoreProductDTO productDTO = adapter.adaptToDto(product);
 
             if (product.getId() != null && productRepository.existsById(product.getId())) {
-                // product = productRepository.save(product);
                 product = productFacade.createProduct(productDTO);
             }
             
@@ -64,7 +63,6 @@ public class OrderService {
             order.addItem(orderItem);
         });
 
-        // !!!
         Order savedOrder = orderRepository.save(order); 
 
         System.out.println("\nSavedOrder em order Service: " + savedOrder.toString());

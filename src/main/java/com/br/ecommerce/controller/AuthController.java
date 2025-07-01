@@ -17,7 +17,6 @@ public class AuthController {
     @GetMapping({"/", "/home"})
     public String home(Authentication authentication, Model model) {
         if (authentication != null && authentication.isAuthenticated()) {
-            // Fragmento padrão para usuários autenticados
             model.addAttribute("activeFragment", "customer"); 
             return "home/homeSignedIn";
         } else {
@@ -26,9 +25,8 @@ public class AuthController {
     }
 
     @GetMapping("/oauth2/callback/github")
-    // public String githubCallback(OAuth2User oauthUser) {
     public String githubCallback(OAuth2UserRequest oauthUser) {
         authService.loadUser(oauthUser);
-        return "redirect:/"; // "redirect:/customer"
+        return "redirect:/";
     }
 }

@@ -1,0 +1,19 @@
+.d-none {
+    display: none !important;
+}
+
+.my-fixed-height-col {
+    height: 250px;
+    overflow-y: auto;
+}
+
+input.updating {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: wait;
+}
+
+input[type="number"][readonly] {
+    background-color: white;
+    cursor: default;
+}

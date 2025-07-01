@@ -33,6 +33,7 @@ if (checkoutBtn) {
     });
 }
 
+
 function addToCart(buttonElement) {
     const productId = buttonElement.getAttribute('data-product-id');
     const price = buttonElement.getAttribute('data-product-price');
@@ -90,3 +91,97 @@ function addToCart(buttonElement) {
     });
 }
 
+function removeItem(productId) {
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    
+    fetch('/cart/remove/' + productId, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            [csrfHeader]: csrfToken
+        }
+    }).then(response => {
+        if(response.ok) {
+            window.location.reload();
+        } else {
+            return response.json().then(err => {
+                throw new Error(err.error || 'Erro ao remover item');
+            });
+        }
+    })
+    .catch(error => {
+        alert(error.message);
+        console.error('Error:', error);
+    });
+}
+
+function updateQuantity(productId, change) {
+    const input = document.querySelector(`input[data-product-id="${productId}"]`);
+    let newQuantity = parseInt(input.value) + change;
+    
+    newQuantity = Math.max(1, newQuantity);
+    
+    input.value = newQuantity;
+    
+    updateCartItem(productId, newQuantity);
+}
+
+function updateCartItem(productId, quantity) {
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+    
+    const input = document.querySelector(`input[data-product-id="${productId}"]`);
+    input.classList.add('updating');
+    
+    fetch('/cart/update/' + productId, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            [csrfHeader]: csrfToken
+        },
+        body: JSON.stringify({ quantity: quantity })
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Se a resposta não for OK, tentamos extrair o erro
+            return response.text().then(text => {
+                throw new Error(text || 'Falha ao atualizar quantidade');
+            });
+        }
+        // Tentamos parsear como JSON apenas se houver conteúdo
+        return response.text().then(text => {
+            return text ? JSON.parse(text) : {};
+        });
+    })
+    .then(data => {
+        if (data && data.total) {
+            updateCartTotals(data.total);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError(error.message);
+        input.value = input.defaultValue;
+    })
+    .finally(() => {
+        input.classList.remove('updating');
+    });
+}
+
+function updateCartTotals(newTotal) {
+    // Atualiza os elementos que mostram o total
+    document.querySelectorAll('.cart-total').forEach(el => {
+        el.textContent = `R$ ${newTotal.toFixed(2)}`;
+    });
+}
+
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger position-fixed top-0 end-0 m-3';
+    errorDiv.style.zIndex = '1000';
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 5000);
+}

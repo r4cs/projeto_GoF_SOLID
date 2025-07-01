@@ -35,9 +35,9 @@ public class OrderController {
     @GetMapping
     public String listOrders(Model model, @AuthenticationPrincipal Customer customer) {
         List<Order> orders = orderService.getOrdersByCustomer(customer.getId());
-        System.out.println("\n\nCustomer ID: " + customer.getId()); // Novo log
+        System.out.println("\n\nCustomer ID: " + customer.getId());
         System.out.println("Número de pedidos encontrados: " + orders.size());
-        System.out.println("Orders found: " + orders + "\n\n"); // Mostra os pedidos
+        System.out.println("Orders found: " + orders + "\n\n");
         model.addAttribute("orders", orders);
         model.addAttribute("activeFragment", "orders");
         return "home/homeSignedIn";
@@ -55,7 +55,7 @@ public class OrderController {
         
         model.addAttribute("order", order);
         model.addAttribute("activeFragment", "detail");
-        return "fragments/order-detail";
+        return "home/homeSignedIn";
     }
     
     @GetMapping("/customer/{customerId}")
@@ -64,10 +64,20 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
     
-    @PostMapping("/{id}/advance-status")
+    @PostMapping("/{id}/advance")
     public ResponseEntity<Void> advanceOrderStatus(@PathVariable Long id) {
         orderService.advanceOrderStatus(id);
         return ResponseEntity.ok().build();
+        // return "redirect:/orders/track/" + id;
+    }
+
+    @GetMapping("/track/{id}")
+    public String trackOrder(@PathVariable Long id, Model model) {
+        Order order = orderService.getOrderById(id)
+            .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+        
+        model.addAttribute("activeFragment", order);
+        return "order-status";
     }
 
     @ModelAttribute("orderUtils")

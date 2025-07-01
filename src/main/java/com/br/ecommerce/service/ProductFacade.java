@@ -63,6 +63,7 @@ public class ProductFacade {
      */
     public Product createProduct(FakeStoreProductDTO productDTO) {
             Product product = adapter.adaptToProduct(productDTO);
+            
 
         String description = productDTO.getDescription();
         if (description != null && description.length() > 255) {

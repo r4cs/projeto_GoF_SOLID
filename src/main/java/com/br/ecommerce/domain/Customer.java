@@ -50,7 +50,6 @@ public class Customer implements UserDetails, OAuth2User {
         this.id = Long.valueOf(attributes.get("id").toString());
         this.email = (String) attributes.get("email");
         this.name = (String) attributes.get("name");
-        // Pode definir uma senha padrão ou null para OAuth2, se não for usada
         this.password = null; 
     }
 
@@ -61,7 +60,7 @@ public class Customer implements UserDetails, OAuth2User {
         return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
-    // Retorna o "username" do usuário. Para OAuth2, o ID do GitHub ou email é um bom candidato.
+
     @Override
     public String getUsername() {
         return this.email; // Ou String.valueOf(this.id) se preferir o ID como username

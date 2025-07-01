@@ -13,10 +13,6 @@ public class CustomerObserver implements OrderObserver {
         this.name = name;
     }
     
-    // public CustomerObserver(String name) {
-    //     this.name = name;
-    // }
-    
     @Override
     public void update(String message) {
         System.out.println("Cliente " + name + ": " + message);

@@ -49,7 +49,6 @@ public class CartService {
         cartRepository.save(cart);
     }
 
-    
     public void removeItem(Long customerId, Long productId) {
         Customer customer = customerRepository.findById(customerId)
             .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
@@ -102,17 +101,54 @@ public class CartService {
             System.out.println("orderItem quantity: " + orderItem.getQuantity());
         }
 
-        // Processar pagamento
+        // Processar pagamento *** versao super simplificada ***
         paymentMethod.pay(getTotal(customerId));
         
-        //retirado por enquanto
-        // Limpar carrinho
-        // Cart cart = customer.getCart();
-        // if (cart != null) {
-        //     cart.getItems().clear();
-        //     cartRepository.save(cart);
-        // }
+        clearCart(customerId);
         
         return order.getId();
+    }
+
+    public void clearCart(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+        
+        Cart cart = customer.getCart();
+        if (cart != null) {
+            cart.getItems().clear();
+            cartRepository.save(cart);
+        }
+    }
+
+    public boolean isCartEmpty(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+        
+        Cart cart = customer.getCart();
+        return cart == null || cart.getItems().isEmpty();
+    }
+
+    public void updateItemQuantity(Long customerId, Long productId, int quantity) {
+        if (quantity < 1) {
+            throw new IllegalArgumentException("A quantidade deve ser pelo menos 1");
+        }
+
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+        
+        productFacade.getProductById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+        
+        Cart cart = customer.getCart();
+        if (cart == null) {
+            throw new IllegalStateException("Carrinho não encontrado para este cliente");
+        }
+        
+        if (cart.getItems().containsKey(productId)) {
+            cart.getItems().put(productId, quantity);
+            cartRepository.save(cart);
+        } else {
+            throw new IllegalArgumentException("Produto não encontrado no carrinho");
+        }
     }
 }

@@ -79,6 +79,35 @@ public class CartController {
         }
     }
 
+    @DeleteMapping("/remove/{productId}")
+    public ResponseEntity<?> removeItem(
+        @AuthenticationPrincipal Customer customer,
+        @PathVariable Long productId
+    ) {
+        try {
+            cartService.removeItem(customer.getId(), productId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/update/{productId}")
+    public ResponseEntity<?> updateItemQuantity(
+        @AuthenticationPrincipal Customer customer,
+        @PathVariable Long productId,
+        @RequestBody Map<String, Integer> request
+    ) {
+        try {
+            cartService.updateItemQuantity(customer.getId(), productId, request.get("quantity"));
+            double newTotal = cartService.getTotal(customer.getId());
+            return ResponseEntity.ok(Map.of("total", newTotal));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
 
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<String> handleNullPointer(NullPointerException ex) {
